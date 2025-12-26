@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Yazıcı Fiyat Hesaplayıcı</title>
+
+<style>
+body{font-family:system-ui;background:#f5f5f7;margin:0;padding:15px}
+.dark body{background:#1a1a1d;color:#f2f2f2}
+
+.card{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.1)}
+.dark .card{background:#2a2a2d}
+
+.tabs{display:flex;gap:10px;margin-bottom:20px}
+.tab{flex:1;text-align:center;padding:10px;border-radius:10px;background:#e5e7eb;cursor:pointer}
+.tab.active{background:#2563eb;color:#fff}
+.dark .tab:not(.active){background:#3a3a3d;color:#f1f1f1}
+
+h2{margin-top:25px}
+
+.settingRow{margin-bottom:14px;max-width:420px}
+
+input,select{
+ width:100%;padding:8px;border-radius:8px;
+ border:1px solid #ccc;margin-top:6px;box-sizing:border-box
+}
+.dark input,.dark select{background:#3a3a3d;color:#fff;border:1px solid #555}
+
+button{
+ padding:10px 14px;border:0;border-radius:10px;
+ margin-top:10px;color:#fff;cursor:pointer
+}
+.blue{background:#2563eb}
+.green{background:#10b981}
+.danger{background:#b91c1c}
+
+.modelRow{
+ display:grid;
+ grid-template-columns:minmax(120px,1fr) minmax(120px,1fr) minmax(90px,.7fr) auto;
+ gap:10px;margin-top:10px
+}
+
+.result{
+ margin-top:20px;padding:18px;border-radius:10px;
+ background:#f0f2f6;font-size:22px;text-align:center
+}
+.dark .result{background:#333}
+
+table{width:100%;border-collapse:collapse;margin-top:15px}
+td,th{padding:8px;border-bottom:1px solid #ccc;text-align:left}
+.dark td,.dark th{border-color:#555}
+</style>
+</head>
+
+<body>
+<div class="card">
+
+<div class="tabs">
+ <div class="tab active" onclick="showPage('main',this)">Ana Sayfa</div>
+ <div class="tab" onclick="showPage('settings',this)">Ayarlar</div>
+</div>
+
+<!-- ANA SAYFA -->
+<div id="main">
+<label>Filament</label>
+<select id="filamentMain"></select>
+
+<h2>Model Bilgileri</h2>
+<div id="modelsMain"></div>
+
+<button class="blue" onclick="addModel()">+ Model Ekle</button>
+<button class="green" onclick="calculate()">Hesapla</button>
+
+<div id="resultMain" class="result" style="display:none"></div>
+</div>
+
+<!-- AYARLAR -->
+<div id="settings" style="display:none">
+
+<h2>Filament Yönetimi</h2>
+<div class="modelRow">
+ <input id="newFilName" placeholder="Filament adı">
+ <input id="newFilPrice" placeholder="Kg fiyatı">
+ <button class="blue" onclick="addFilament()">Ekle</button>
+</div>
+<div id="filamentList"></div>
+
+<h2>Filament Seçimi</h2>
+<select id="filamentSettings"></select>
+
+<h2>Model Bilgileri</h2>
+<div id="modelsSettings"></div>
+
+<h2>Makine & Enerji</h2>
+<div class="settingRow"><label>Yazıcı Gücü (W)</label><input id="printerW"></div>
+<div class="settingRow"><label>Elektrik Fiyatı (TL/kWh)</label><input id="elecPrice"></div>
+
+<h2>İşçilik & Kâr</h2>
+<div class="settingRow"><label>Saatlik İşçilik (TL)</label><input id="laborRate"></div>
+<div class="settingRow"><label>Kâr (%)</label><input id="profitPct"></div>
+<div class="settingRow"><label>Fire (%)</label><input id="wastePct"></div>
+
+<h2>Amortisman</h2>
+<div class="settingRow"><label>Makine Fiyatı (TL)</label><input id="machinePrice"></div>
+<div class="settingRow"><label>Makine Ömrü (Saat)</label><input id="machineLife"></div>
+
+<h2>Kalite</h2>
+<select id="quality">
+ <option value="0.7">Hızlı</option>
+ <option value="1">Orta</option>
+ <option value="1.3">Yüksek</option>
+</select>
+
+<button class="green" onclick="calculate()">Hesapla</button>
+
+<div id="resultSettings" class="result" style="display:none"></div>
+
+<h2>Maliyet Dökümü</h2>
+<table>
+<tr><th>Kalem</th><th>Tutar (TL)</th></tr>
+<tbody id="costTable"></tbody>
+</table>
+
+<label style="margin-top:15px;display:block">
+ <input type="checkbox" id="darkToggle"> Koyu Mod
+</label>
+
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id)
+
+let state={
+ filaments:[{name:'PLA',price:800}],
+ filamentIndex:0,
+ models:[{g:'',m:'',q:1}],
+ printerW:1300,elecPrice:2.24,laborRate:150,
+ profitPct:40,wastePct:5,quality:1,
+ machinePrice:30000,machineLife:15000,
+ dark:false
+}
+
+function showPage(p,el){
+ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
+ el.classList.add('active')
+ main.style.display=p==='main'?'block':'none'
+ settings.style.display=p==='settings'?'block':'none'
+ renderAll()
+}
+
+/* ---------- FILAMENT ---------- */
+function renderFilaments(){
+ filamentMain.innerHTML=filamentSettings.innerHTML=''
+ filamentList.innerHTML=''
+ state.filaments.forEach((f,i)=>{
+  filamentMain.innerHTML+=`<option value="${i}">${f.name}</option>`
+  filamentSettings.innerHTML+=`<option value="${i}">${f.name}</option>`
+  filamentList.innerHTML+=`
+   <div class="modelRow">
+    <div>${f.name}</div>
+    <div>${f.price} TL</div>
+    <button class="danger" onclick="delFilament(${i})">Sil</button>
+   </div>`
+ })
+ filamentMain.value=filamentSettings.value=state.filamentIndex
+ filamentMain.onchange=filamentSettings.onchange=e=>{
+  state.filamentIndex=+e.target.value
+  renderCosts()
+ }
+}
+
+function addFilament(){
+ if(!newFilName.value || !newFilPrice.value) return
+ state.filaments.push({name:newFilName.value,price:+newFilPrice.value})
+ newFilName.value=newFilPrice.value=''
+ renderAll()
+}
+
+function delFilament(i){
+ state.filaments.splice(i,1)
+ if(state.filamentIndex>=state.filaments.length) state.filamentIndex=0
+ renderAll()
+}
+
+/* ---------- MODELS ---------- */
+function renderModels(where){
+ const t = where==='main' ? modelsMain : modelsSettings
+ t.innerHTML=''
+ state.models.forEach((m,i)=>{
+  t.innerHTML+=`
+  <div class="modelRow">
+   <input value="${m.g}" oninput="upd(${i},'g',this.value)" placeholder="Gram">
+   <input value="${m.m}" oninput="upd(${i},'m',this.value)" placeholder="Süre (dk)">
+   <input value="${m.q}" oninput="upd(${i},'q',this.value)" placeholder="Adet">
+   <button class="danger" onclick="delModel(${i})">X</button>
+  </div>`
+ })
+}
+
+function upd(i,k,v){state.models[i][k]=v;renderCosts()}
+function addModel(){state.models.push({g:'',m:'',q:1});renderAll()}
+function delModel(i){state.models.splice(i,1);renderAll()}
+
+/* ---------- SETTINGS BIND ---------- */
+function bind(id,key){
+ $(id).value=state[key]
+ $(id).oninput=e=>{state[key]=+e.target.value;renderCosts()}
+}
+;['printerW','elecPrice','laborRate','profitPct','wastePct','machinePrice','machineLife']
+.forEach(k=>bind(k,k))
+
+quality.value=state.quality
+quality.onchange=e=>{state.quality=+e.target.value;renderCosts()}
+
+darkToggle.onchange=e=>{
+ state.dark=e.target.checked
+ document.documentElement.classList.toggle('dark',state.dark)
+}
+
+/* ---------- CALC ---------- */
+function calcRaw(){
+ let gr=0,h=0
+ state.models.forEach(m=>{
+  gr+=(+m.g||0)*(+m.q||0)
+  h+=((+m.m||0)/60)*(+m.q||0)
+ })
+ h*=state.quality
+ gr*=1+(state.wastePct/100)
+ const f=state.filaments[state.filamentIndex]
+ return{
+  fil:(gr/1000)*f.price,
+  elec:(state.printerW/1000)*h*state.elecPrice,
+  labor:h*state.laborRate,
+  amort:(state.machinePrice/state.machineLife)*h
+ }
+}
+
+function renderCosts(){
+ const c=calcRaw()
+ const s=c.fil+c.elec+c.labor+c.amort
+ costTable.innerHTML=`
+ <tr><td>Filament</td><td>${c.fil.toFixed(2)}</td></tr>
+ <tr><td>Elektrik</td><td>${c.elec.toFixed(2)}</td></tr>
+ <tr><td>İşçilik</td><td>${c.labor.toFixed(2)}</td></tr>
+ <tr><td>Amortisman</td><td>${c.amort.toFixed(2)}</td></tr>
+ <tr><th>Toplam</th><th>${s.toFixed(2)}</th></tr>
+ <tr><th>Satış</th><th>${(s*(1+state.profitPct/100)).toFixed(2)}</th></tr>`
+}
+
+function calculate(){
+ const c=calcRaw()
+ const total=(c.fil+c.elec+c.labor+c.amort)*(1+state.profitPct/100)
+ resultMain.style.display=resultSettings.style.display='block'
+ resultMain.innerHTML=
+ resultSettings.innerHTML=
+  `Önerilen Satış Fiyatı<br><b>${total.toFixed(2)} TL</b>`
+}
+
+function renderAll(){
+ renderFilaments()
+ renderModels('main')
+ renderModels('settings')
+ renderCosts()
+}
+
+renderAll()
+</script>
+</body>
+</html>
