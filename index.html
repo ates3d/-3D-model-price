@@ -2,270 +2,280 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3D Yazıcı Fiyat Hesaplayıcı</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<title>Pro 3D Price Master</title>
 
 <style>
-body{font-family:system-ui;background:#f5f5f7;margin:0;padding:15px}
-.dark body{background:#1a1a1d;color:#f2f2f2}
-
-.card{max-width:900px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.1)}
-.dark .card{background:#2a2a2d}
-
-.tabs{display:flex;gap:10px;margin-bottom:20px}
-.tab{flex:1;text-align:center;padding:10px;border-radius:10px;background:#e5e7eb;cursor:pointer}
-.tab.active{background:#2563eb;color:#fff}
-.dark .tab:not(.active){background:#3a3a3d;color:#f1f1f1}
-
-h2{margin-top:25px}
-
-.settingRow{margin-bottom:14px;max-width:420px}
-
-input,select{
- width:100%;padding:8px;border-radius:8px;
- border:1px solid #ccc;margin-top:6px;box-sizing:border-box
+:root {
+    --primary: #4f46e5; --primary-hover: #4338ca;
+    --bg: #f8fafc; --card-bg: #ffffff;
+    --text: #1e293b; --border: #e2e8f0;
 }
-.dark input,.dark select{background:#3a3a3d;color:#fff;border:1px solid #555}
-
-button{
- padding:10px 14px;border:0;border-radius:10px;
- margin-top:10px;color:#fff;cursor:pointer
+.dark {
+    --bg: #0f172a; --card-bg: #1e293b;
+    --text: #f1f5f9; --border: #334155;
 }
-.blue{background:#2563eb}
-.green{background:#10b981}
-.danger{background:#b91c1c}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent}
+body{font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin:0; padding:10px; transition: background 0.3s}
+
+.card{max-width:800px; margin:10px auto; background: var(--card-bg); padding:24px; border-radius:20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border)}
+
+.topBar{display:flex; justify-content:flex-end; align-items:center; margin-bottom:20px; gap:15px}
+.toggleWrap{display:flex; align-items:center; cursor:pointer; background: var(--border); padding:5px 10px; border-radius:20px}
+
+.langSwitch{font-weight:700; font-size:14px; background: var(--border); padding:5px 12px; border-radius:20px}
+.langSwitch span{cursor:pointer; opacity:.4; transition: 0.2s}
+.langSwitch span.active{opacity:1; color: var(--primary)}
+
+.tabs{display:flex; gap:8px; margin-bottom:25px; background: var(--border); padding:4px; border-radius:12px}
+.tab{flex:1; text-align:center; padding:10px; border-radius:8px; cursor:pointer; font-weight:600; transition: 0.2s; font-size: 14px}
+.tab.active{background: var(--card-bg); color: var(--primary); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1)}
+
+label{font-size:13px; font-weight:600; margin-bottom:6px; display:flex; align-items:center; gap:6px; color: #64748b}
+.save-tick{color:#10b981; opacity:0; font-size:16px; transition: 0.3s}
+.save-tick.show{opacity:1}
+
+input, select{
+    width:100%; padding:12px; border-radius:10px; border: 1px solid var(--border); 
+    background: var(--bg); color: var(--text); font-size:16px; transition: all 0.2s;
+}
+input:focus{border-color: var(--primary); outline:none; ring: 2px var(--primary)}
 
 .modelRow{
- display:grid;
- grid-template-columns:minmax(120px,1fr) minmax(120px,1fr) minmax(90px,.7fr) auto;
- gap:10px;margin-top:10px
+    display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:12px; 
+    margin-bottom:15px; padding:15px; background: rgba(0,0,0,0.02); border-radius:12px;
 }
+@media (max-width: 600px) {
+    .modelRow { grid-template-columns: 1fr 1fr; }
+    .modelRow button { grid-column: span 2; margin-top: 5px; }
+}
+
+.settingRow{margin-bottom:20px}
+h2{font-size: 18px; margin: 25px 0 15px 0; border-left: 4px solid var(--primary); padding-left: 10px}
+
+button{
+    padding:14px 20px; border:0; border-radius:12px; font-weight:700; 
+    cursor:pointer; transition: all 0.2s; width: 100%; margin-top: 10px;
+}
+button:active{transform: scale(0.98)}
+.blue{background: var(--primary); color: #fff}
+.green{background: #10b981; color: #fff; font-size: 18px}
+.danger{background: #ef4444; color: #fff}
 
 .result{
- margin-top:20px;padding:18px;border-radius:10px;
- background:#f0f2f6;font-size:22px;text-align:center
+    margin-top:30px; padding:25px; border-radius:16px; font-size:22px; 
+    text-align:center; animation: slideUp 0.4s ease-out;
 }
-.dark .result{background:#333}
+.result.ok{background: linear-gradient(135deg, #4f46e5, #818cf8); color:#fff; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3)}
 
-table{width:100%;border-collapse:collapse;margin-top:15px}
-td,th{padding:8px;border-bottom:1px solid #ccc;text-align:left}
-.dark td,.dark th{border-color:#555}
+@keyframes slideUp { from {opacity:0; transform: translateY(20px)} to {opacity:1; transform: translateY(0)} }
 </style>
 </head>
 
 <body>
 <div class="card">
+    <div class="topBar">
+        <div class="toggleWrap" onclick="toggleDark()">
+            <span id="darkIcon">🌙</span>
+        </div>
+        <div class="langSwitch">
+            <span id="langTR" onclick="setLang('tr')">TR</span><span style="margin:0 5px; opacity:0.3">|</span><span id="langEN" onclick="setLang('en')">EN</span>
+        </div>
+    </div>
 
-<div class="tabs">
- <div class="tab active" onclick="showPage('main',this)">Ana Sayfa</div>
- <div class="tab" onclick="showPage('settings',this)">Ayarlar</div>
-</div>
+    <div class="tabs">
+        <div id="tabMain" class="tab active" onclick="showPage('main')" data-i="mainTab"></div>
+        <div id="tabSettings" class="tab" onclick="showPage('settings')" data-i="settingsTab"></div>
+    </div>
 
-<!-- ANA SAYFA -->
-<div id="main">
-<label>Filament</label>
-<select id="filamentMain"></select>
+    <div id="main">
+        <label><span data-i="filament"></span> <span class="save-tick">✓</span></label>
+        <select id="filamentSelect" onchange="calculate()"></select>
 
-<h2>Model Bilgileri</h2>
-<div id="modelsMain"></div>
+        <h2 data-i="modelInfo"></h2>
+        <div id="models"></div>
 
-<button class="blue" onclick="addModel()">+ Model Ekle</button>
-<button class="green" onclick="calculate()">Hesapla</button>
+        <button class="blue" onclick="addModel()" style="background:#6366f120; color:var(--primary); margin-bottom:10px" data-i="addModel"></button>
 
-<div id="resultMain" class="result" style="display:none"></div>
-</div>
+        <div class="settingRow">
+            <label><span data-i="laborTime"></span> <span class="save-tick">✓</span></label>
+            <input id="laborTime" type="number" placeholder="0">
+        </div>
 
-<!-- AYARLAR -->
-<div id="settings" style="display:none">
+        <button class="green" onclick="calculate()" data-i="calculate"></button>
+        <div id="resultMain" class="result" style="display:none"></div>
+    </div>
 
-<h2>Filament Yönetimi</h2>
-<div class="modelRow">
- <input id="newFilName" placeholder="Filament adı">
- <input id="newFilPrice" placeholder="Kg fiyatı">
- <button class="blue" onclick="addFilament()">Ekle</button>
-</div>
-<div id="filamentList"></div>
+    <div id="settings" style="display:none">
+        <h2 data-i="filamentMgmt"></h2>
+        <div class="modelRow" style="background:none; padding:0">
+            <div><label data-i="filamentName"></label><input id="newFilName"></div>
+            <div><label><span data-i="priceKg"></span></label><input id="newFilPrice" type="number"></div>
+            <button class="blue" onclick="addFilament()" data-i="add" style="margin-top:25px"></button>
+        </div>
+        <div id="filamentList"></div>
 
-<h2>Filament Seçimi</h2>
-<select id="filamentSettings"></select>
-
-<h2>Model Bilgileri</h2>
-<div id="modelsSettings"></div>
-
-<h2>Makine & Enerji</h2>
-<div class="settingRow"><label>Yazıcı Gücü (W)</label><input id="printerW"></div>
-<div class="settingRow"><label>Elektrik Fiyatı (TL/kWh)</label><input id="elecPrice"></div>
-
-<h2>İşçilik & Kâr</h2>
-<div class="settingRow"><label>Saatlik İşçilik (TL)</label><input id="laborRate"></div>
-<div class="settingRow"><label>Kâr (%)</label><input id="profitPct"></div>
-<div class="settingRow"><label>Fire (%)</label><input id="wastePct"></div>
-
-<h2>Amortisman</h2>
-<div class="settingRow"><label>Makine Fiyatı (TL)</label><input id="machinePrice"></div>
-<div class="settingRow"><label>Makine Ömrü (Saat)</label><input id="machineLife"></div>
-
-<h2>Kalite</h2>
-<select id="quality">
- <option value="0.7">Hızlı</option>
- <option value="1">Orta</option>
- <option value="1.3">Yüksek</option>
-</select>
-
-<button class="green" onclick="calculate()">Hesapla</button>
-
-<div id="resultSettings" class="result" style="display:none"></div>
-
-<h2>Maliyet Dökümü</h2>
-<table>
-<tr><th>Kalem</th><th>Tutar (TL)</th></tr>
-<tbody id="costTable"></tbody>
-</table>
-
-<label style="margin-top:15px;display:block">
- <input type="checkbox" id="darkToggle"> Koyu Mod
-</label>
-
-</div>
+        <h2 data-i="costs"></h2>
+        <div class="settingRow">
+            <label data-i="currencyLabel"></label>
+            <select id="currencySelect" onchange="updateCurrency(this.value)">
+                <option value="TL">TRY (₺)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+            </select>
+        </div>
+        <div class="settingRow"><label><span data-i="printerW"></span> <span class="save-tick">✓</span></label><input id="printerW" type="number"></div>
+        <div class="settingRow"><label><span data-i="elec"></span> (<span class="currSym"></span>/kWh) <span class="save-tick">✓</span></label><input id="elecPrice" type="number" step="0.01"></div>
+        <div class="settingRow"><label><span data-i="laborRate"></span> (<span class="currSym"></span>) <span class="save-tick">✓</span></label><input id="laborRate" type="number"></div>
+        <div class="settingRow"><label><span data-i="machinePrice"></span> (<span class="currSym"></span>) <span class="save-tick">✓</span></label><input id="machinePrice" type="number"></div>
+        <div class="settingRow"><label><span data-i="machineLife"></span> <span class="save-tick">✓</span></label><input id="machineLife" type="number"></div>
+        <div class="settingRow"><label><span data-i="profit"></span> <span class="save-tick">✓</span></label><input id="profitPct" type="number"></div>
+        <div class="settingRow"><label><span data-i="waste"></span> <span class="save-tick">✓</span></label><input id="wastePct" type="number"></div>
+        
+        <h2 data-i="shippingAndPack"></h2>
+        <div class="settingRow"><label><span data-i="packCost"></span> (<span class="currSym"></span>) <span class="save-tick">✓</span></label><input id="packCost" type="number"></div>
+        <div class="settingRow"><label><span data-i="shipCost"></span> (<span class="currSym"></span>) <span class="save-tick">✓</span></label><input id="shipCost" type="number"></div>
+    </div>
 </div>
 
 <script>
 const $=id=>document.getElementById(id)
+let state = JSON.parse(localStorage.getItem('calc') || '{"filaments":[], "models":[{}], "dark":false, "lang":"tr", "currency":"TL"}')
 
-let state={
- filaments:[{name:'PLA',price:800}],
- filamentIndex:0,
- models:[{g:'',m:'',q:1}],
- printerW:1300,elecPrice:2.24,laborRate:150,
- profitPct:40,wastePct:5,quality:1,
- machinePrice:30000,machineLife:15000,
- dark:false
+const symbols = { 'TL': '₺', 'USD': '$', 'EUR': '€' }
+const dict = {
+    tr: {
+        mainTab:'Hesapla', settingsTab:'Ayarlar', filament:'Filament Tipi',
+        modelInfo:'Baskı Detayları', addModel:'+ Yeni Parça Ekle', calculate:'Fiyatı Hesapla',
+        laborTime:'Hazırlık Süresi (dk)', filamentMgmt:'Filamentlerin', filamentName:'Adı',
+        priceKg:'Kg Fiyatı', add:'Ekle', costs:'Sabit Maliyetler', currencyLabel:'Para Birimi',
+        printerW:'Yazıcı Gücü (W)', elec:'Elektrik Birim Fiyatı', laborRate:'Saatlik İşçilik',
+        machinePrice:'Makine Fiyatı', machineLife:'Ömür (saat)', profit:'Kâr Oranı (%)',
+        waste:'Fire (%)', shippingAndPack:'Lojistik', packCost:'Paketleme', shipCost:'Kargo',
+        err:'Eksik bilgi var!', lblGram:'Gram', lblTime:'Süre (dk)', lblQty:'Adet', lblTotal:'TOPLAM TUTAR'
+    },
+    en: {
+        mainTab:'Calculate', settingsTab:'Settings', filament:'Filament Type',
+        modelInfo:'Print Details', addModel:'+ Add New Part', calculate:'Calculate Price',
+        laborTime:'Setup Time (min)', filamentMgmt:'Filaments', filamentName:'Name',
+        priceKg:'Price/Kg', add:'Add', costs:'Fixed Costs', currencyLabel:'Currency',
+        printerW:'Printer Watts', elec:'Elec. Price', laborRate:'Hourly Labor',
+        machinePrice:'Machine Price', machineLife:'Life (hrs)', profit:'Profit (%)',
+        waste:'Waste (%)', shippingAndPack:'Logistics', packCost:'Packaging', shipCost:'Shipping',
+        err:'Missing info!', lblGram:'Grams', lblTime:'Min', lblQty:'Qty', lblTotal:'TOTAL PRICE'
+    }
 }
 
-function showPage(p,el){
- document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))
- el.classList.add('active')
- main.style.display=p==='main'?'block':'none'
- settings.style.display=p==='settings'?'block':'none'
- renderAll()
+function save(e) {
+    localStorage.setItem('calc', JSON.stringify(state));
+    if (e && e.target) {
+        const label = e.target.closest('div')?.querySelector('.save-tick') || e.target.closest('.settingRow')?.querySelector('.save-tick');
+        if (label) { label.classList.add('show'); setTimeout(()=>label.classList.remove('show'), 1000); }
+    }
 }
 
-/* ---------- FILAMENT ---------- */
-function renderFilaments(){
- filamentMain.innerHTML=filamentSettings.innerHTML=''
- filamentList.innerHTML=''
- state.filaments.forEach((f,i)=>{
-  filamentMain.innerHTML+=`<option value="${i}">${f.name}</option>`
-  filamentSettings.innerHTML+=`<option value="${i}">${f.name}</option>`
-  filamentList.innerHTML+=`
-   <div class="modelRow">
-    <div>${f.name}</div>
-    <div>${f.price} TL</div>
-    <button class="danger" onclick="delFilament(${i})">Sil</button>
-   </div>`
- })
- filamentMain.value=filamentSettings.value=state.filamentIndex
- filamentMain.onchange=filamentSettings.onchange=e=>{
-  state.filamentIndex=+e.target.value
-  renderCosts()
- }
+function toggleDark() {
+    state.dark = !state.dark;
+    document.documentElement.classList.toggle('dark', state.dark);
+    $('darkIcon').textContent = state.dark ? '☀️' : '🌙';
+    save();
 }
 
-function addFilament(){
- if(!newFilName.value || !newFilPrice.value) return
- state.filaments.push({name:newFilName.value,price:+newFilPrice.value})
- newFilName.value=newFilPrice.value=''
- renderAll()
+function setLang(l) {
+    state.lang = l;
+    applyLang();
+    save();
 }
 
-function delFilament(i){
- state.filaments.splice(i,1)
- if(state.filamentIndex>=state.filaments.length) state.filamentIndex=0
- renderAll()
+function applyLang() {
+    document.querySelectorAll('[data-i]').forEach(el => el.textContent = dict[state.lang][el.dataset.i]);
+    $('langTR').classList.toggle('active', state.lang==='tr');
+    $('langEN').classList.toggle('active', state.lang==='en');
+    updateCurrencyDisplay();
 }
 
-/* ---------- MODELS ---------- */
-function renderModels(where){
- const t = where==='main' ? modelsMain : modelsSettings
- t.innerHTML=''
- state.models.forEach((m,i)=>{
-  t.innerHTML+=`
-  <div class="modelRow">
-   <input value="${m.g}" oninput="upd(${i},'g',this.value)" placeholder="Gram">
-   <input value="${m.m}" oninput="upd(${i},'m',this.value)" placeholder="Süre (dk)">
-   <input value="${m.q}" oninput="upd(${i},'q',this.value)" placeholder="Adet">
-   <button class="danger" onclick="delModel(${i})">X</button>
-  </div>`
- })
+function updateCurrency(v) { state.currency = v; updateCurrencyDisplay(); save(); }
+function updateCurrencyDisplay() {
+    document.querySelectorAll('.currSym').forEach(el => el.textContent = symbols[state.currency]);
+    renderFilaments();
 }
 
-function upd(i,k,v){state.models[i][k]=v;renderCosts()}
-function addModel(){state.models.push({g:'',m:'',q:1});renderAll()}
-function delModel(i){state.models.splice(i,1);renderAll()}
-
-/* ---------- SETTINGS BIND ---------- */
-function bind(id,key){
- $(id).value=state[key]
- $(id).oninput=e=>{state[key]=+e.target.value;renderCosts()}
-}
-;['printerW','elecPrice','laborRate','profitPct','wastePct','machinePrice','machineLife']
-.forEach(k=>bind(k,k))
-
-quality.value=state.quality
-quality.onchange=e=>{state.quality=+e.target.value;renderCosts()}
-
-darkToggle.onchange=e=>{
- state.dark=e.target.checked
- document.documentElement.classList.toggle('dark',state.dark)
+function showPage(p) {
+    $('main').style.display = p==='main' ? 'block' : 'none';
+    $('settings').style.display = p==='settings' ? 'block' : 'none';
+    $('tabMain').classList.toggle('active', p==='main');
+    $('tabSettings').classList.toggle('active', p==='settings');
 }
 
-/* ---------- CALC ---------- */
-function calcRaw(){
- let gr=0,h=0
- state.models.forEach(m=>{
-  gr+=(+m.g||0)*(+m.q||0)
-  h+=((+m.m||0)/60)*(+m.q||0)
- })
- h*=state.quality
- gr*=1+(state.wastePct/100)
- const f=state.filaments[state.filamentIndex]
- return{
-  fil:(gr/1000)*f.price,
-  elec:(state.printerW/1000)*h*state.elecPrice,
-  labor:h*state.laborRate,
-  amort:(state.machinePrice/state.machineLife)*h
- }
+function addModel(m={}) {
+    const d = document.createElement('div');
+    d.className = 'modelRow';
+    d.innerHTML = `
+        <div><label><span data-i="lblGram"></span> <span class="save-tick">✓</span></label><input class="gram" type="number" value="${m.g||''}" oninput="saveModels(event)"></div>
+        <div><label><span data-i="lblTime"></span> <span class="save-tick">✓</span></label><input class="minute" type="number" value="${m.m||''}" oninput="saveModels(event)"></div>
+        <div><label><span data-i="lblQty"></span> <span class="save-tick">✓</span></label><input class="qty" type="number" value="${m.q||1}" oninput="saveModels(event)"></div>
+        <button class="danger" onclick="this.parentNode.remove();saveModels()">✕</button>`;
+    $('models').appendChild(d);
+    applyLang();
 }
 
-function renderCosts(){
- const c=calcRaw()
- const s=c.fil+c.elec+c.labor+c.amort
- costTable.innerHTML=`
- <tr><td>Filament</td><td>${c.fil.toFixed(2)}</td></tr>
- <tr><td>Elektrik</td><td>${c.elec.toFixed(2)}</td></tr>
- <tr><td>İşçilik</td><td>${c.labor.toFixed(2)}</td></tr>
- <tr><td>Amortisman</td><td>${c.amort.toFixed(2)}</td></tr>
- <tr><th>Toplam</th><th>${s.toFixed(2)}</th></tr>
- <tr><th>Satış</th><th>${(s*(1+state.profitPct/100)).toFixed(2)}</th></tr>`
+function saveModels(e) {
+    state.models = Array.from(document.querySelectorAll('#models .modelRow')).map(r => ({
+        g: r.querySelector('.gram').value, m: r.querySelector('.minute').value, q: r.querySelector('.qty').value || 1
+    }));
+    state.laborTime = +$('laborTime').value || 0;
+    save(e);
 }
 
-function calculate(){
- const c=calcRaw()
- const total=(c.fil+c.elec+c.labor+c.amort)*(1+state.profitPct/100)
- resultMain.style.display=resultSettings.style.display='block'
- resultMain.innerHTML=
- resultSettings.innerHTML=
-  `Önerilen Satış Fiyatı<br><b>${total.toFixed(2)} TL</b>`
+function renderFilaments() {
+    $('filamentSelect').innerHTML = state.filaments.map((f,i)=>`<option value="${i}">${f.name} (${f.price} ${symbols[state.currency]})</option>`).join('');
+    $('filamentList').innerHTML = state.filaments.map((f,i)=>`
+        <div class="modelRow" style="grid-template-columns: 1fr 1fr auto; align-items:center">
+            <div style="font-weight:600">${f.name}</div><div>${f.price} ${symbols[state.currency]}</div>
+            <button class="danger" onclick="delFil(${i})" style="padding:8px">✕</button>
+        </div>`).join('');
 }
 
-function renderAll(){
- renderFilaments()
- renderModels('main')
- renderModels('settings')
- renderCosts()
+function addFilament() {
+    if (!$('newFilName').value || !$('newFilPrice').value) return;
+    state.filaments.push({name: $('newFilName').value, price: +$('newFilPrice').value});
+    $('newFilName').value = $('newFilPrice').value = '';
+    save(); renderFilaments();
+}
+function delFil(i) { state.filaments.splice(i,1); save(); renderFilaments(); }
+
+function calculate() {
+    saveModels();
+    if (!state.filaments.length || !state.models.length) return;
+    let tg=0, th=0, v=true;
+    state.models.forEach(m => { if(m.g>0 && m.m>0) { tg+=m.g*m.q; th+=(m.m/60)*m.q; } else v=false; });
+    const fil = state.filaments[$('filamentSelect').value];
+    if (!v || !fil) { $('resultMain').style.display='none'; return; }
+
+    const fCost = (tg/1000)*fil.price*(1+state.wastePct/100);
+    const eCost = (state.printerW/1000)*th*state.elecPrice;
+    const lCost = (state.laborTime/60)*state.laborRate;
+    const dep = (state.machinePrice/state.machineLife)*th;
+    const prod = fCost + eCost + lCost + dep;
+    const total = prod * (1+state.profitPct/100) + (state.packCost||0) + (state.shipCost||0);
+
+    $('resultMain').innerHTML = `<small>${dict[state.lang].lblTotal}</small><br><strong>${total.toFixed(2)} ${symbols[state.currency]}</strong>`;
+    $('resultMain').style.display = 'block';
+    $('resultMain').className = 'result ok';
 }
 
-renderAll()
+// Başlangıç
+document.documentElement.classList.toggle('dark', state.dark);
+$('darkIcon').textContent = state.dark ? '☀️' : '🌙';
+['printerW','elecPrice','laborRate','machinePrice','machineLife','profitPct','wastePct','packCost','shipCost'].forEach(id => {
+    $(id).value = state[id] || '';
+    $(id).oninput = e => { state[id] = +e.target.value; save(e); };
+});
+$('laborTime').value = state.laborTime || '';
+$('laborTime').oninput = e => saveModels(e);
+state.models.forEach(m => addModel(m));
+applyLang(); renderFilaments();
 </script>
 </body>
 </html>
