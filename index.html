@@ -7,7 +7,8 @@
 
 <style>
 :root {
-    --primary: #4f46e5; --primary-hover: #4338ca;
+    --primary: #f04e23; /* Logonun turuncu tonu */
+    --primary-hover: #d13d1a;
     --bg: #f8fafc; --card-bg: #ffffff;
     --text: #1e293b; --border: #e2e8f0;
 }
@@ -20,6 +21,10 @@
 body{font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin:0; padding:10px; transition: background 0.3s}
 
 .card{max-width:800px; margin:10px auto; background: var(--card-bg); padding:24px; border-radius:20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid var(--border)}
+
+/* LOGO ALANI */
+.logo-container { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+.logo-container img { max-width: 220px; height: auto; border-radius: 10px; }
 
 .topBar{display:flex; justify-content:flex-end; align-items:center; margin-bottom:20px; gap:15px}
 .toggleWrap{display:flex; align-items:center; cursor:pointer; background: var(--border); padding:5px 10px; border-radius:20px}
@@ -41,6 +46,18 @@ input, select{
     background: var(--bg); color: var(--text); font-size:16px; transition: all 0.2s;
 }
 input:focus{border-color: var(--primary); outline:none; ring: 2px var(--primary)}
+
+/* HATA DURUMU STİLİ */
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: rgba(239, 68, 68, 0.05) !important;
+    animation: shake 0.4s ease-in-out;
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
 
 .modelRow{
     display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:12px; 
@@ -65,9 +82,9 @@ button:active{transform: scale(0.98)}
 
 .result{
     margin-top:30px; padding:25px; border-radius:16px; font-size:22px; 
-    text-align:center; animation: slideUp 0.4s ease-out;
+    text-align:center; animation: slideUp 0.4s ease-out; display:none;
 }
-.result.ok{background: linear-gradient(135deg, #4f46e5, #818cf8); color:#fff; box-shadow: 0 10px 20px rgba(79, 70, 229, 0.3)}
+.result.ok{background: linear-gradient(135deg, #f04e23, #fb923c); color:#fff; box-shadow: 0 10px 20px rgba(240, 78, 35, 0.3)}
 
 @keyframes slideUp { from {opacity:0; transform: translateY(20px)} to {opacity:1; transform: translateY(0)} }
 </style>
@@ -75,9 +92,10 @@ button:active{transform: scale(0.98)}
 
 <body>
 <div class="card">
-    <div style="text-align: center; margin-bottom: 20px;">
-    <img src="logo.png" alt="Ateş 3D Logo" style="max-width: 250px; height: auto; border-radius: 10px;">
-</div>
+    <div class="logo-container">
+        <img src="logo.png" alt="Ateş 3D Logo">
+    </div>
+
     <div class="topBar">
         <div class="toggleWrap" onclick="toggleDark()">
             <span id="darkIcon">🌙</span>
@@ -99,7 +117,7 @@ button:active{transform: scale(0.98)}
         <h2 data-i="modelInfo"></h2>
         <div id="models"></div>
 
-        <button class="blue" onclick="addModel()" style="background:#6366f120; color:var(--primary); margin-bottom:10px" data-i="addModel"></button>
+        <button class="blue" onclick="addModel()" style="background:rgba(240, 78, 35, 0.1); color:var(--primary); margin-bottom:10px" data-i="addModel"></button>
 
         <div class="settingRow">
             <label><span data-i="laborTime"></span> <span class="save-tick">✓</span></label>
@@ -107,7 +125,7 @@ button:active{transform: scale(0.98)}
         </div>
 
         <button class="green" onclick="calculate()" data-i="calculate"></button>
-        <div id="resultMain" class="result" style="display:none"></div>
+        <div id="resultMain" class="result"></div>
     </div>
 
     <div id="settings" style="display:none">
@@ -156,7 +174,9 @@ const dict = {
         printerW:'Yazıcı Gücü (W)', elec:'Elektrik Birim Fiyatı', laborRate:'Saatlik İşçilik',
         machinePrice:'Makine Fiyatı', machineLife:'Ömür (saat)', profit:'Kâr Oranı (%)',
         waste:'Fire (%)', shippingAndPack:'Lojistik', packCost:'Paketleme', shipCost:'Kargo',
-        err:'Eksik bilgi var!', lblGram:'Gram', lblTime:'Süre (dk)', lblQty:'Adet', lblTotal:'TOPLAM TUTAR'
+        err:'Eksik bilgi var!', lblGram:'Gram', lblTime:'Süre (dk)', lblQty:'Adet', lblTotal:'TOPLAM TUTAR',
+        errFil:'Lütfen önce ayarlar sayfasından bir filament ekleyin!',
+        errSet:'Lütfen ayarlar sayfasındaki maliyet bilgilerini eksiksiz doldurun!'
     },
     en: {
         mainTab:'Calculate', settingsTab:'Settings', filament:'Filament Type',
@@ -166,7 +186,9 @@ const dict = {
         printerW:'Printer Watts', elec:'Elec. Price', laborRate:'Hourly Labor',
         machinePrice:'Machine Price', machineLife:'Life (hrs)', profit:'Profit (%)',
         waste:'Waste (%)', shippingAndPack:'Logistics', packCost:'Packaging', shipCost:'Shipping',
-        err:'Missing info!', lblGram:'Grams', lblTime:'Min', lblQty:'Qty', lblTotal:'TOTAL PRICE'
+        err:'Missing info!', lblGram:'Grams', lblTime:'Min', lblQty:'Qty', lblTotal:'TOTAL PRICE',
+        errFil:'Please add a filament in settings first!',
+        errSet:'Please fill in the cost details in settings!'
     }
 }
 
@@ -215,20 +237,20 @@ function addModel(m={}) {
     const d = document.createElement('div');
     d.className = 'modelRow';
     d.innerHTML = `
-        <div><label><span data-i="lblGram"></span> <span class="save-tick">✓</span></label><input class="gram" type="number" value="${m.g||''}" oninput="saveModels(event)"></div>
-        <div><label><span data-i="lblTime"></span> <span class="save-tick">✓</span></label><input class="minute" type="number" value="${m.m||''}" oninput="saveModels(event)"></div>
-        <div><label><span data-i="lblQty"></span> <span class="save-tick">✓</span></label><input class="qty" type="number" value="${m.q||1}" oninput="saveModels(event)"></div>
+        <div><label><span data-i="lblGram"></span></label><input class="gram" type="number" value="${m.g||''}" oninput="saveModels()"></div>
+        <div><label><span data-i="lblTime"></span></label><input class="minute" type="number" value="${m.m||''}" oninput="saveModels()"></div>
+        <div><label><span data-i="lblQty"></span></label><input class="qty" type="number" value="${m.q||1}" oninput="saveModels()"></div>
         <button class="danger" onclick="this.parentNode.remove();saveModels()">✕</button>`;
     $('models').appendChild(d);
     applyLang();
 }
 
-function saveModels(e) {
+function saveModels() {
     state.models = Array.from(document.querySelectorAll('#models .modelRow')).map(r => ({
         g: r.querySelector('.gram').value, m: r.querySelector('.minute').value, q: r.querySelector('.qty').value || 1
     }));
     state.laborTime = +$('laborTime').value || 0;
-    save(e);
+    save();
 }
 
 function renderFilaments() {
@@ -250,25 +272,54 @@ function delFil(i) { state.filaments.splice(i,1); save(); renderFilaments(); }
 
 function calculate() {
     saveModels();
-    if (!state.filaments.length || !state.models.length) return;
-    let tg=0, th=0, v=true;
-    state.models.forEach(m => { if(m.g>0 && m.m>0) { tg+=m.g*m.q; th+=(m.m/60)*m.q; } else v=false; });
+    document.querySelectorAll('input, select').forEach(el => el.classList.remove('input-error'));
+    
+    let firstErrorEl = null;
+    const check = (id) => {
+        const el = $(id);
+        if (!el.value || el.value < 0) {
+            el.classList.add('input-error');
+            if (!firstErrorEl) firstErrorEl = el;
+            return false;
+        }
+        return true;
+    };
+
+    const req = ['printerW', 'elecPrice', 'machinePrice', 'machineLife'];
+    let settingsOk = true;
+    req.forEach(id => { if (!check(id)) settingsOk = false; });
+
+    let modelsOk = true;
+    document.querySelectorAll('#models .modelRow').forEach(r => {
+        const g = r.querySelector('.gram'), m = r.querySelector('.minute');
+        if (!g.value || g.value <= 0) { g.classList.add('input-error'); if(!firstErrorEl) firstErrorEl=g; modelsOk=false; }
+        if (!m.value || m.value <= 0) { m.classList.add('input-error'); if(!firstErrorEl) firstErrorEl=m; modelsOk=false; }
+    });
+
+    if (!state.filaments.length) { alert(dict[state.lang].errFil); showPage('settings'); return; }
+
+    if (!settingsOk || !modelsOk) {
+        if (!settingsOk && $('main').style.display !== 'none') { alert(dict[state.lang].errSet); showPage('settings'); }
+        if (firstErrorEl) { firstErrorEl.focus(); firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        return;
+    }
+
     const fil = state.filaments[$('filamentSelect').value];
-    if (!v || !fil) { $('resultMain').style.display='none'; return; }
+    let tg=0, th=0;
+    state.models.forEach(m => { tg += m.g * m.q; th += (m.m / 60) * m.q; });
 
     const fCost = (tg/1000)*fil.price*(1+state.wastePct/100);
     const eCost = (state.printerW/1000)*th*state.elecPrice;
     const lCost = (state.laborTime/60)*state.laborRate;
     const dep = (state.machinePrice/state.machineLife)*th;
-    const prod = fCost + eCost + lCost + dep;
-    const total = prod * (1+state.profitPct/100) + (state.packCost||0) + (state.shipCost||0);
+    const total = (fCost + eCost + lCost + dep) * (1+state.profitPct/100) + (state.packCost||0) + (state.shipCost||0);
 
     $('resultMain').innerHTML = `<small>${dict[state.lang].lblTotal}</small><br><strong>${total.toFixed(2)} ${symbols[state.currency]}</strong>`;
     $('resultMain').style.display = 'block';
     $('resultMain').className = 'result ok';
 }
 
-// Başlangıç
+// Başlat
 document.documentElement.classList.toggle('dark', state.dark);
 $('darkIcon').textContent = state.dark ? '☀️' : '🌙';
 ['printerW','elecPrice','laborRate','machinePrice','machineLife','profitPct','wastePct','packCost','shipCost'].forEach(id => {
@@ -276,11 +327,9 @@ $('darkIcon').textContent = state.dark ? '☀️' : '🌙';
     $(id).oninput = e => { state[id] = +e.target.value; save(e); };
 });
 $('laborTime').value = state.laborTime || '';
-$('laborTime').oninput = e => saveModels(e);
-state.models.forEach(m => addModel(m));
+$('laborTime').oninput = e => saveModels();
+if(state.models.length) state.models.forEach(m => addModel(m)); else addModel();
 applyLang(); renderFilaments();
 </script>
 </body>
-
 </html>
-
